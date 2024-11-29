@@ -115,7 +115,7 @@ resource "aws_route_table_association" "tm_rtascn_private_sn" {
 
 ## My ACM certificate
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "nasimrahman.com"  
+  domain_name       = "ecs.habibur-rahman.com"  
   validation_method = "DNS"                      
   tags = {
     Name = "ecs-cert"
