@@ -1,0 +1,32 @@
+name: build-docker-image
+
+on:
+  push:
+    branches: main # Triggers the workflow when changes are pushed to the 'main' branch
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: checkout code
+        uses: actions/checkout@v2  # Checks out your repository code
+      -
+        name: Set up ECR image Buildx
+        uses: aws-actions/setup-buildx-action@v3
+      -
+        name: Configure AWS credentials
+        uses: aws-actions/login-action@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Build, tag as latest, and push Docker image to ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: 713881828888.dkr.ecr.us-east-1.amazonaws.com
+          ECR_REPOSITORY: h-rahman-7/threat-model 
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          # echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:latest" >> $GITHUB_OUTPUT
