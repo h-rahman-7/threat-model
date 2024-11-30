@@ -36,7 +36,7 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: 713881828888.dkr.ecr.us-east-1.amazonaws.com
-          ECR_REPOSITORY: h-rahman-7/threat-model 
+          ECR_REPOSITORY: threat-model 
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
