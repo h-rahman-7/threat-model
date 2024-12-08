@@ -1,6 +1,6 @@
 ## My ECS cluster
 resource "aws_ecs_cluster" "tm_ecs_cluster" {
-  name = "tm-ecs-cluster"
+  name = var.cluster_name
 
   setting {
     name  = "containerInsights"
@@ -10,23 +10,23 @@ resource "aws_ecs_cluster" "tm_ecs_cluster" {
 
 ## My ECS task definition
 resource "aws_ecs_task_definition" "tm_app_td" {
-  family                   = "tm-app-td"
+  family                   = var.task_family
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = data.aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn            = data.aws_iam_role.ecs_task_execution_role.arn
-  cpu                      = "1024"
-  memory                   = "3072"
+  execution_role_arn       = var.execution_role_arn
+  task_role_arn            = var.task_role_arn
+  cpu                      = var.task_cpu
+  memory                   = var.task_memory
 
   container_definitions = jsonencode([
     {
-      name      = "tm-container"
-      image     = "713881828888.dkr.ecr.us-east-1.amazonaws.com/threat-model:latest"
+      name      = var.container_name
+      image     = var.container_image
       cpu       = 0
       essential = true
       portMappings = [{
-        containerPort = 3001
-        hostPort      = 3001
+        containerPort = var.container_port
+        hostPort      = var.container_port
         protocol      = "tcp"
       }]
     }
@@ -35,29 +35,29 @@ resource "aws_ecs_task_definition" "tm_app_td" {
 
 ## My ECS service
 resource "aws_ecs_service" "tm_app_service" {
-  name            = "my-tm-service"
+  name            = var.service_name
   cluster         = aws_ecs_cluster.tm_ecs_cluster.id
   task_definition = aws_ecs_task_definition.tm_app_td.arn
-  desired_count   = 1
+  desired_count   = var.desired_count
   launch_type     = "FARGATE"
 
   network_configuration {
     assign_public_ip = true
-    subnets          = [aws_subnet.tm_public_sn1.id, aws_subnet.tm_public_sn2.id]
-    security_groups  = [aws_security_group.tm_sg.id]
+    subnets          = var.subnet_ids
+    security_groups  = var.security_group_ids
   }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.tm_app_lb_tg.arn
-    container_name   = "tm-container"
-    container_port   = 3001
+    container_name   = var.container_name
+    container_port   = var.container_port
   }
 
   deployment_controller {
     type = "ECS"
   }
 
-  depends_on = [aws_lb_listener.tm_http_listener]
+  depends_on = [var.listener_http_arn, var.listener_https_arn]
 }
 
 data "aws_iam_role" "ecs_task_execution_role" {
@@ -68,7 +68,3 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   role       = data.aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
-
-
-
-

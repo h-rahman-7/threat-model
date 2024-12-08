@@ -37,43 +37,6 @@ resource "aws_internet_gateway" "tm_igw" {
   }
 }
 
-## My application security group
-resource "aws_security_group" "tm_sg" {
-  vpc_id = aws_vpc.tm_vpc.id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Allows HTTP from anywhere
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Allows HTTPS from anywhere
-  }
-
-  ingress {
-    from_port   = 3001           # Forwarding requests to ECS container
-    to_port     = 3001
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"           # Allows all outgoing traffic   
-    cidr_blocks = ["0.0.0.0/0"]  
-  }
-
-  tags = {
-    Name = "tm-sg"
-  }
-}
-
 ## My route table
 resource "aws_route_table" "tm_rt" {
   vpc_id = aws_vpc.tm_vpc.id
